@@ -7,10 +7,14 @@ function HU.DebugNofity(...)
 	if HU.DebugNofityFunc then HU.DebugNofityFunc(...) end
 end
 
+-- 获取当前程序的working directory
 local function GetWorkingDir()
 	if HU.WorkingDir == nil then
+		-- 获取当前目录
+		-- 返回的是一个filel
 	    local p = io.popen("echo %cd%")
 	    if p then
+			-- 读取一行
 	        HU.WorkingDir = p:read("*l").."\\"
 	        p:close()
 	    end
@@ -19,10 +23,15 @@ local function GetWorkingDir()
 end
 
 local function Normalize(path)
+	-- 替换/
 	path = path:gsub("/","\\") 
+
+	-- 如果路径中没有:, 则认为是，相对于当前working directory目录的，相对目录
+	-- windows的目录？
 	if path:find(":") == nil then
 		path = GetWorkingDir()..path 
 	end
+
 	local pathLen = #path 
 	if path:sub(pathLen, pathLen) == "\\" then
 		 path = path:sub(1, pathLen - 1)
@@ -37,7 +46,9 @@ local function Normalize(path)
     return table.concat(parts, "\\")
 end
 
+-- RootPath: 装有路径的table
 function HU.InitFileMap(RootPath)
+	-- 遍历路径
 	for _, rootpath in pairs(RootPath) do
 		rootpath = Normalize(rootpath)
 		local file = io.popen("dir /S/B /A:A \""..rootpath.."\"")
@@ -372,6 +383,7 @@ function HU.UpdateAllFunction(OldTable, NewTable, Name, From, Deepth)
 	end
 end
 
+-- 初始化
 function HU.Init(UpdateListFile, RootPath, FailNotify, ENV)
 	HU.UpdateListFile = UpdateListFile
 	HU.HUMap = {}
